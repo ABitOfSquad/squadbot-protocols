@@ -1,0 +1,11 @@
+{
+  "protocols" : ["Whatsapp"],
+  
+  "Whatsapp" : {
+      "npm_dependecies" : {
+        "whatsapi" : " latest"
+      },
+      "files" : ["protocol.js", " settings.json"],
+      "authors" : ["Nick Vernij", "Lem Severein"],
+  }
+}
