@@ -1,6 +1,9 @@
 # squadbot-protocols
 All official protocol for squadbot, maintained and reviewed by the ABitOfSquad team.
 
+## Issue Tracking
+Issues are being tracked in [Squadbot's main repository](https://github.com/ABitOfSquad/squadbot), since protocol issues are mostly API issues.
+
 ## Contributing
 If you would like to submit a protocol to squadbot, you can use the ``whatsapp`` protocol as your documentation. We aren't planning on writing an official documentation for Protocol Developers yet, our writers. The steps of submitting a protocol are quite simple.
 
