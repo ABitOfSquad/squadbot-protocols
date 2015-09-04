@@ -1,6 +1,8 @@
 {
+    "emojiPolicy" : true,
+    "homeGroup" : "XXXXXX",
+    
     "telnumber" : "XXXXXX",
     "displayname" : "Squadbot",
-    "whatsapp_pass" : "XXXXXX",
-    "group_id" : "XXXXXX"
+    "whatsapp_pass" : "XXXXXX"
 }

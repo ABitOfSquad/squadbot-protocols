@@ -4,8 +4,6 @@ var http = require("http");
 var stream = require("stream").Transform
 var fs = require("fs");
 
-
-var globalPrivate = new events.EventEmitter()
 var protSettings
 var typingTimeout
 var wa
@@ -19,6 +17,8 @@ exports.init = function(loadedSettings) {
         password: protSettings["whatsapp_pass"], // WhatsApp password
         ccode: "44" // country code
     });
+    
+    protocol.homeGroup = protSettings["homeGroup"]
 
     wa.setMaxListeners(250)
 
@@ -39,11 +39,11 @@ function logged(err) {
     print("Getting groups");
 
     wa.requestGroupsList(function(err, groups) {
+        var homegroup
+        
         groups.forEach(function(g) {
             print('Name: ' + g.subject + ', Participants: ' + g.participants.length);
-
-            //recognize main beta group
-            if(g.groupId == protSettings["group_id"]){
+            if(g.groupId + "@g.us" == protSettings["homeGroup"]){
                 homegroup = g;
                 print("Found squadbot's home group");
                 
@@ -53,41 +53,40 @@ function logged(err) {
         });
 
         if(!homegroup) {
-            print("Could not find group")
+            print("Could not find group", "red")
             process.exit();
         }
 
         wa.on("receivedMessage", function(message) {
-            if (message.from.split("@")[0] == protSettings["group_id"]) {
-                
-                if (message.body.substring(0, 1) == "!" || message.body.substring(0, 1) == "/") {
-                    var parts = message.body.substring(1).split(" ");
-                    
-                    bot.emit("command", parts[0].toLowerCase(), parts.slice(1), message)
-                } else {
-                    bot.emit("message", message.body, message);
-                }
-            }
-            else if (!message.isGroup) {
-                if (message.body.substring(0, 1) == "!" || message.body.substring(0, 1) == "/") {
-                    var parts = message.body.substring(1).split(" ");
-                    
-                    bot.private(message.from).emit("command", message.from, parts[0].toLowerCase(), parts.slice(1), message)
-                } else {
-                    bot.private(message.from).emit("message", message.from, message.body, message);
-                }
-            }
+            console.log("sns");
+            // if (message.from.split("@")[0] == protSettings["homeGroup"]) {
+            //     
+            //     if (message.body.substring(0, 1) == "!" || message.body.substring(0, 1) == "/") {
+            //         var parts = message.body.substring(1).split(" ");
+            //         
+            //         bot.emit("command", parts[0].toLowerCase(), parts.slice(1), message)
+            //     } else {
+            //         bot.emit("message", message.body, message);
+            //     }
+            // }
+            // else if (!message.isGroup) {
+            //     if (message.body.substring(0, 1) == "!" || message.body.substring(0, 1) == "/") {
+            //         var parts = message.body.substring(1).split(" ");
+            //         
+            //         bot.private(message.from).emit("command", message.from, parts[0].toLowerCase(), parts.slice(1), message)
+            //     } else {
+            //         bot.private(message.from).emit("message", message.from, message.body, message);
+            //     }
+            // }
+            // 
+            console.log("sn");
+            protocol.emit("message", message.from, message.body, message)
             
             wa.sendMessageReceipt(message);
         })
 
         wa.on("receivedLocation", function(loc) {
-            if (loc.from.split("@")[0] == protSettings["group_id"]) {
-                bot.emit("location", loc)
-            }
-            else if (loc.from.split("@")[1] != "g.us") {
-                globalPrivate.emit("location:" + from, loc)
-            }
+            protocol.emit("location", loc.from, loc)
         })
         
         function getMedia(url, callback) {
@@ -121,7 +120,7 @@ function logged(err) {
         
         wa.on("receivedImage", function(image) {
             console.log(image);
-            if (image.from.split("@")[0] == protSettings["group_id"] || image.from.split("@")[1] != "g.us") {
+            if (image.from.split("@")[0] == protSettings["homeGroup"] || image.from.split("@")[1] != "g.us") {
                 getMedia(image.url, function(file) {
                     console.log(file);
                 })
@@ -131,18 +130,13 @@ function logged(err) {
         wa.on("presence", function(pres) {
             var event = pres.type == "available" ? "online" : "offline"
             
-            globalPrivate.emit(event + ":" + pres.from)
+            protocol.emit(event, pres.from)
         })
 
         wa.on("typing", function(type, from, author) {
             var event = type == "composing" ? "typing" : "stopedTyping"
             
-            if (from.split("@")[0] == protSettings["group_id"]) {
-                bot.emit(event, author)
-            }
-            else if (from.split("@")[1] != "g.us") {
-                globalPrivate.emit(event + ":" + from)
-            }
+            protocol.emit(event, from, author)
         })
     });
 
@@ -169,37 +163,33 @@ function handleReceivedEvents(id, emitter, err) {
     }, 900000); // Remove after 15 min to free memory
 }
 
-bot.send = bot.sendMessage = function(msg, to) {
+protocol.sendMessage = function(msg, to) {
     emitter = new events.EventEmitter();
     
-    var to = to ? to : protSettings["group_id"]
-    
-    console.log(protSettings);
-    console.log(to);
-    console.log(msg);
-    console.log(encodeEmoji(msg));
+    var to = to ? to : protSettings["homeGroup"]
     
     try {
         wa.sendMessage(to, encodeEmoji(msg), function(err, id) {handleReceivedEvents(id, emitter, err)});
     } catch (err) {
         emitter.emit("error", err)
-    } 
+        console.log(err.stack);
+    }
     
     return emitter
 }
 
-bot.sendImage = function(image, caption) {return sendMedia(image, ["image/jpeg", "image/png"], "png", "sendImage", caption)}
-bot.sendVideo = function(video, caption) {return sendMedia(video, ["video/mp4"], "mp4", "sendVideo", caption)}
-bot.sendAudio = function(audio) {return sendMedia(audio, ["audio/mpeg", "audio/x-wav"], "mp3", "sendAudio")}
+protocol.sendImage = function(image, caption) {return sendMedia(image, ["image/jpeg", "image/png"], "png", "sendImage", caption)}
+protocol.sendVideo = function(video, caption) {return sendMedia(video, ["video/mp4"], "mp4", "sendVideo", caption)}
+protocol.sendAudio = function(audio) {return sendMedia(audio, ["audio/mpeg", "audio/x-wav"], "mp3", "sendAudio")}
 
 function sendMedia(location, mimes, suffix, type, caption, to) {
     emitter = new events.EventEmitter();
     
     if (type == "sendAudio") {
-        var to = caption ? caption : protSettings["group_id"]
+        var to = caption ? caption : protSettings["homeGroup"]
     }
     else {
-        var to = to ? to : protSettings["group_id"]
+        var to = to ? to : protSettings["homeGroup"]
     }
     
     try {
@@ -255,9 +245,9 @@ function sendMedia(location, mimes, suffix, type, caption, to) {
 }
 
 
-bot.sendContact = function(fields, to) {
+protocol.sendContact = function(fields, to) {
     emitter = new events.EventEmitter();
-    var to = to ? to : protSettings["group_id"]
+    var to = to ? to : protSettings["homeGroup"]
     
     try {
         var vcard = "BEGIN:VCARD"
@@ -281,7 +271,7 @@ bot.sendContact = function(fields, to) {
                         vcard += "\nEMAIL:" + fields[key]
                         break;
                    default:
-                        throw "Unknown field " + key
+                        throw new Error("Unknown field " + key)
                }
            }
        }
@@ -297,8 +287,8 @@ bot.sendContact = function(fields, to) {
     return emitter
 };
 
-bot.type = bot.sendTyping = function(duration, to) {
-    var to = to ? to : protSettings["group_id"]
+protocol.sendTyping = function(duration, to) {
+    var to = to ? to : protSettings["homeGroup"]
     wa.sendComposingState(to)
         
     typingTimeout = setTimeout(function() {
@@ -306,8 +296,8 @@ bot.type = bot.sendTyping = function(duration, to) {
     }, duration)
 }
 
-bot.getMembers = function (callback) {
-    wa.requestGroupInfo(protSettings["group_id"], function(err, group) {
+protocol.getMembers = function (callback) {
+    wa.requestGroupInfo(protSettings["homeGroup"], function(err, group) {
         if (!err) {
             try {
                 callback(group.participants)
@@ -318,67 +308,10 @@ bot.getMembers = function (callback) {
     });
 };
 
-bot.private = function(id) {
-    var ob = {}
-    ob.sub = false
-    
-    ob.on = function(event, callback) {
-        if (event == "online" || event == "online") {
-            if (!id) {
-                return
-            }
-            
-            if (!ob.sub) {
-                wa.sendPresenceSubscription(id)
-                ob.sub = true
-            }
-            
-            globalPrivate.on(event + ":" + id, function() {callback.apply(callback, arguments)})
-        }
-        else {
-            if (!id) {
-                globalPrivate.on(event, function() {callback.apply(callback, arguments)})
-            }
-            else {
-                globalPrivate.on(event + ":" + id, function() {callback.apply(callback, arguments)})
-            }
-        }
-        
-    }
-    
-    ob.emit = function() {
-        if (!id) {
-            throw "Tried to emit to a private without an ID."
-        }
-        else {
-            globalPrivate.emit.apply(globalPrivate, arguments)
-            
-            arguments["0"] = arguments["0"] + ":" + id
-            globalPrivate.emit.apply(globalPrivate, arguments)
-            
-        }
-    }
-    
-    if (id) {
-        ob.send = function(msg) {bot.sendMessage(msg, id)}
-        ob.sendMessage = function(msg) {bot.sendMessage(msg, id)}
-        ob.sendImage = function(image, caption) {return sendMedia(image, ["image/jpeg", "image/png"], "png", "sendImage", caption, id)}
-        ob.sendVideo = function(video, caption) {return sendMedia(video, ["video/mp4"], "mp4", "sendVideo", caption, id)}
-        ob.sendAudio = function(audio) {return sendMedia(audio, ["audio/mpeg", "audio/x-wav"], "mp3", "sendAudio", id)}
-        ob.sendContact = function(fields) {bot.sendContact(fields, id)}
-        ob.type = function(duration) {bot.sendTyping(duration, id)}
-        ob.sendTyping = function(duration) {bot.sendTyping(duration, id)}
-        
-        
-    }
-    
-    return ob
-}
-
 bot.admin = {}
 bot.admin = {
     "check": function checkIfAdmin(callback) {
-        wa.requestGroupInfo(protSettings["group_id"], function(err, data) {
+        wa.requestGroupInfo(protSettings["homeGroup"], function(err, data) {
             if (err) {
                 try {
                     callback(err, null)
