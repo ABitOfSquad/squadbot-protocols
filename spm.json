@@ -1,7 +1,7 @@
 {
-  "protocols" : ["Whatsapp"],
+  "protocols" : ["whatsapp"],
   
-  "Whatsapp" : {
+  "whatsapp" : {
       "npm_dependecies" : {
         "whatsapi" : " latest"
       },
