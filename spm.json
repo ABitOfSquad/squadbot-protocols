@@ -5,7 +5,7 @@
       "npm_dependecies" : {
         "whatsapi" : " latest"
       },
-      "files" : ["protocol.js", " settings.json"],
+      "files" : ["protocol.js", "settings.json"],
       "authors" : ["Nick Vernij", "Lem Severein"],
       "stable_version" : "3a3acf39d5e9618b1e88caafee8aa8e79334ae44"
   }
