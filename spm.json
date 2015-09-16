@@ -5,8 +5,17 @@
       "npm_dependecies" : {
         "whatsapi" : " latest"
       },
+      "description" : "Runs on a whatsapp group chat, however private messaging is implemented.",
       "files" : ["protocol.js", "settings.json", "implements.json"],
       "authors" : ["Nick Vernij", "Lem Severein"],
-      "stable_version" : "3a3acf39d5e9618b1e88caafee8aa8e79334ae44"
+      "stable_version" : "master"
+  },
+  
+  "debug" : {
+      "npm_dependecies" : { },
+      "description" : "Opening a local http server with a simple webchat for debugging purposes.",
+      "files" : [],
+      "authors" : ["Nick Vernij"],
+      "stable_version" : "master"
   }
 }
