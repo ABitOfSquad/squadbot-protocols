@@ -3,7 +3,7 @@
   
   "whatsapp" : {
       "npm_dependecies" : {
-        "whatsapi" : " latest"
+        "whatsapi" : "latest"
       },
       "description" : "Runs on a whatsapp group chat, however private messaging is implemented.",
       "files" : ["protocol.js", "settings.json", "implements.json"],
