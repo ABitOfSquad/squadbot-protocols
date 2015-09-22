@@ -40,7 +40,7 @@ protocol.init = function(settings){
  * API
  */
 
-function sendMessage(msg){
+exports.sendMessage = function(msg){
     io.emit('chatMsg', msg, "SquadBot");
 }
 
