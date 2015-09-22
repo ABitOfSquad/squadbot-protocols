@@ -15,7 +15,7 @@ protocol.init = function(settings){
         res.end(index);
     }).listen(settings["port"]);
 
-    io = require('socket.io')(http);
+    io = require('socket.io')(http, { log: false });
 
     io.on('connection', function(socket){
 
