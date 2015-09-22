@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "sendMessage": true
+  },
+
+  "events": {
+    "message": true
+  }
+}

@@ -12,9 +12,11 @@
   },
   
   "debug" : {
-      "npm_dependecies" : { },
+      "npm_dependecies" : {
+        "socket.io" : "latest"
+      },
       "description" : "Opening a local http server with a simple webchat for debugging purposes.",
-      "files" : [],
+      "files" : ["protocol.js", "settings.json", "implements.json", "index.html"],
       "authors" : ["Nick Vernij"],
       "stable_version" : "master"
   }

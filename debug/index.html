@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+    <title>Squadbot debugger chat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 16px Helvetica, Arial; color: #333; padding-bottom: 65px;}
+        form { background:#2c3e50; padding: 15px; position: fixed; bottom: 0; width: 100%; }
+        form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+        form button { width: 9%; background: #34495e; color:#fff; border: none; padding: 10px;
+            cursor: pointer;}
+        form button:hover { background: #2c3e50; }
+        #messages { list-style-type: none; margin: 0; padding: 0; }
+        #messages li { padding: 5px 10px; }
+        #messages li:nth-child(odd) { background: #eee; }
+    </style>
+</head>
+<body>
+<ul id="messages"></ul>
+<form action="">
+    <input id="m" autocomplete="off" placeholder="Say something cute"/><button>Send</button>
+</form>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    var socket = io();
+    $('form').submit(function(){
+        var val = $('#m').val();
+        if(val.length > 0){
+            socket.emit('chatMsg', val, "Debugger");
+            $('#m').val('');
+        }
+        return false;
+    });
+
+    socket.on('chatMsg', function(msg, user){
+        $('#messages').append("<li><b>" + user + "</b>: " + msg);
+    });
+
+    socket.on('debug', function(ram, up){
+        console.log("RAM: " + ram)
+    });
+</script>
+</body>
+</html>

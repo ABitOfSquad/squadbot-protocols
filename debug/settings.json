@@ -1,0 +1,5 @@
+{
+  "emojiPolicy" : true,
+  "homeGroup" : "debug",
+  "port" : 3000
+}
