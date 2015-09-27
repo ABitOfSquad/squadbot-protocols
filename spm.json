@@ -1,5 +1,5 @@
 {
-  "protocols" : ["whatsapp"],
+  "protocols" : ["whatsapp", "debug"],
   
   "whatsapp" : {
       "npm_dependecies" : {
