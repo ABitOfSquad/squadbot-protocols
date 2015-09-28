@@ -7,7 +7,7 @@ protocol.homeGroup = "debug";
 /**
  * Socket and http handling
  */
-protocol.init = function(settings){
+exports.init = function(settings){
     var http = require('http').createServer(function (req, res) {
         var index = fs.readFileSync(path.resolve(__dirname, "index.html"));
 
